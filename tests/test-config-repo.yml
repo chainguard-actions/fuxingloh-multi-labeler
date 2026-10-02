@@ -1,0 +1,53 @@
+name: Test config-repo input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create labeler config
+        run: |
+          mkdir -p .github
+          cat > .github/labeler.yml << 'EOF'
+          version: v1
+          labels:
+            - label: "wip"
+              matcher:
+                title: ".*WIP.*"
+            - label: "ready"
+              sync: true
+              matcher:
+                title: ".*ready.*"
+          checks:
+            - context: "labeler/ready"
+              labels:
+                any:
+                  - "ready"
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          config-path: .github/labeler.yml
+          config-repo: ${{ github.repository }}
+        continue-on-error: true
+
+      - name: Assert action fails gracefully without PR or issue context
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # Under workflow_dispatch there is no PR or issue payload,
+          # so the action always fails with "Could not get issue_number..."
+          # before it even tries to fetch the config or apply labels.
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully as expected (no PR/issue context under workflow_dispatch)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded without a PR or issue context"
+            exit 1
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

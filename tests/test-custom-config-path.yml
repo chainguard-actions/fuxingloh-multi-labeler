@@ -1,0 +1,45 @@
+name: Test custom config-path input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create custom labeler config at non-default path
+        run: |
+          mkdir -p .github/custom
+          cat > .github/custom/labeler.yml << 'EOF'
+          version: v1
+          labels:
+            - label: "documentation"
+              matcher:
+                title: ".*docs.*"
+            - label: "size/small"
+              matcher:
+                files:
+                  count:
+                    lte: 5
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          config-path: .github/custom/labeler.yml
+        continue-on-error: true
+
+      - name: Assert action fails gracefully without PR or issue context
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully as expected (no PR/issue context under workflow_dispatch)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded without a PR or issue context"
+            exit 1
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

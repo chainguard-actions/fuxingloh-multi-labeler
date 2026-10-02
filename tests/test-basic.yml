@@ -1,0 +1,41 @@
+name: Test basic usage (no PR context)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create labeler config
+        run: |
+          mkdir -p .github
+          cat > .github/labeler.yml << 'EOF'
+          version: v1
+          labels:
+            - label: "bug"
+              matcher:
+                title: ".*bug.*"
+            - label: "enhancement"
+              matcher:
+                title: ".*feat.*"
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+
+      - name: Assert action fails gracefully without PR or issue context
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully as expected (no PR/issue context under workflow_dispatch)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded without a PR or issue context"
+            exit 1
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
