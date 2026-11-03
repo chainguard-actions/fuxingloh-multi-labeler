@@ -6,9 +6,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v5.0.0 | [`v5.0.0`](https://github.com/chainguard-actions/fuxingloh-multi-labeler/tree/v5.0.0) | [`bcd50af`](https://github.com/fuxingloh/multi-labeler/commit/bcd50af464202999e57f556b4aefcf05a34abf85) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v5.0.0 | [`v5.0.0`](https://github.com/chainguard-actions/fuxingloh-multi-labeler/tree/v5.0.0) | [`bcd50af`](https://github.com/fuxingloh/multi-labeler/commit/bcd50af464202999e57f556b4aefcf05a34abf85) | [`HARDENING.md`](https://github.com/chainguard-actions/fuxingloh-multi-labeler/blob/v5.0.0/HARDENING.md) |
 
 ## Privacy
 
